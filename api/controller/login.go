@@ -12,25 +12,39 @@ import (
 
 var database = untils.ReadCon("mysql", "databaseName")
 
+type LoginParams struct {
+	User_name     string `json:"user_name"`
+	User_password string `json:"user_password"`
+}
+
 func HandleLoginController(c echo.Context) error {
-	username := c.FormValue("user_name")
-	password := c.FormValue("password")
-	var u = modal.NewUser()
+	var req = new(LoginParams)
+	c.Bind(req)
+	//var u = modal.NewUser()
+	//defer c.Request().Body.Close()
+	//b, err := ioutil.ReadAll(c.Request().Body)
+	//if err != nil {
+	//	log.Println("failed reading the request body")
+	//	return c.String(http.StatusInternalServerError, err.Error())
+	//}
+	//json.Unmarshal(b, &u)
+	//上面注释的方式是使用流读取参数也是可以的
+	var u1 = modal.NewUser()
 	queryStr := fmt.Sprintf("select user_name,user_password,role from %s where user_name = ?", "user")
-	row := db.QueryRow(queryStr, username)
-	err := row.Scan(&u.User_name, &u.User_password, &u.Role)
+	row := db.QueryRow(queryStr, req.User_name)
+	err := row.Scan(&u1.User_name, &u1.User_password, &u1.Role)
 	if err != nil {
-		return c.String(http.StatusOK, "无此用户")
+		return c.JSON(http.StatusOK, modal.Err(http.StatusUnauthorized, "user is not exist"))
 	}
-	if password == u.User_password {
-		token, err := middleware.CreateToken(u.User_name, u.Role == 1)
+	if req.User_password == u1.User_password {
+		token, err := middleware.CreateToken(u1.User_name, u1.Role == "1")
 		if err != nil {
 			return c.JSON(http.StatusOK, err.Error())
 		} else {
-			return c.JSON(http.StatusOK, token)
+			return c.JSON(http.StatusOK, modal.Success(token))
 		}
 	} else {
-		return c.String(http.StatusOK, "密码错误")
+		return c.JSON(http.StatusOK, modal.Err(http.StatusUnauthorized, "password error"))
 	}
 
 }

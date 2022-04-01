@@ -5,7 +5,6 @@ import (
 )
 
 func InitRouter(c *echo.Group) {
-	//HandleLoginRoute(c)
 	HandleUserRoute(c)
 	HandleRoleRoute(c)
 }

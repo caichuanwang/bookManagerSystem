@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
+	"net/http"
 )
 
 func CustomFilter(next echo.HandlerFunc) echo.HandlerFunc {
@@ -24,6 +25,7 @@ func CustomFilter(next echo.HandlerFunc) echo.HandlerFunc {
 			c.Response().Header().Set(echo.HeaderServer, "Echo/3.0")
 			return next(c)
 		} else {
+			return c.String(http.StatusOK, "token is error")
 			fmt.Println("token is error")
 		}
 		c.Response().Header().Set(echo.HeaderServer, "Echo/3.0")

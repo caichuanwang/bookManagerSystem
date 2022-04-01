@@ -1,9 +1,8 @@
-package modal
+package feModal
 
 type User struct {
 	Id                int64  `json:"id,omitempty" form:"id"`
-	User_name         string `json:"user_name" form:"user_name"`
-	User_password     string `json:"user_password" form:"user_password"`
+	User_name         string `json:"user_name,omitempty" form:"user_name"`
 	Sex               int8   `json:"sex,omitempty" form:"sex"`
 	Birthday          string `json:"birthday" form:"birthday"`
 	Borrow_book_count int    `json:"borrow_book_count,omitempty" form:"borrow_book_count"`
@@ -12,22 +11,20 @@ type User struct {
 	Email             string `json:"email,omitempty" form:"email"`
 	Role              string `json:"role" form:"role"`
 }
-
-func NewUser() *User {
-	return &User{}
+type QueryUserParams struct {
+	User_name         string `json:"user_name" form:"user_name"`
+	Borrow_book_count string `json:"borrow_book_count" form:"borrow_book_count"`
+	Role              string `json:"role" form:"role"`
+	Page
+	OrderBy
 }
 
-func NewUserWithAllKeys() *User {
-	return &User{
-		Id:                0,
-		User_name:         "",
-		User_password:     "",
-		Sex:               0,
-		Birthday:          "",
-		Borrow_book_count: 0,
-		Phone:             "",
-		Remake:            "",
-		Email:             "",
-		Role:              "",
-	}
+type Page struct {
+	Current  int `json:"current" form:"current"`
+	PageSize int `json:"pageSize" form:"pageSize"`
+}
+
+type OrderBy struct {
+	Order_by   string `json:"order_by"`
+	Order_type string `json:"order_type"`
 }

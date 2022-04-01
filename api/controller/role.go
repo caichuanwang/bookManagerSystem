@@ -4,6 +4,7 @@ import (
 	"bookManagementSystem/api/feModal"
 	"bookManagementSystem/modal"
 	"bookManagementSystem/untils/sqlUntils"
+	"database/sql"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -27,9 +28,9 @@ func CreateRole(c echo.Context) error {
 }
 
 func QueryRole(c echo.Context) error {
-	whereCon := sqlUntils.CreateWhereSql(c, "role_name", "role_weight")
-	orderBySql := sqlUntils.CreateOrderSql(c)
-	LimitSql := sqlUntils.CreateLimitSql(c)
+	whereCon := sqlUntils.CreateWhereSql(make(map[string]interface{}))
+	orderBySql := sqlUntils.CreateOrderSql("", "")
+	LimitSql := sqlUntils.CreateLimitSql(0, 1)
 	queryRoleSql := fmt.Sprintf("select id,role_name,role_weight from role %s %s %s", whereCon, orderBySql, LimitSql)
 	stmt, err := db.Prepare(queryRoleSql)
 	if err != nil {
@@ -73,4 +74,47 @@ func DeleteRole(c echo.Context) error {
 		return c.String(http.StatusOK, err.Error())
 	}
 	return c.String(http.StatusOK, "success")
+}
+
+func QueryRoleOptions(c echo.Context) error {
+	queryRole := "select id,role_name from role"
+	rows, err := db.Query(queryRole)
+	if err != nil {
+		return err
+	}
+	cols, err := rows.Columns()
+	fmt.Printf("%v \n", cols)
+	if err != nil {
+		return err
+	}
+	vals := make([]sql.RawBytes, len(cols)) //建立接口 [id role_name]
+	valsp := make([]interface{}, len(vals)) //建立接口指针的接口
+	result := make([]feModal.SelectOption, 0)
+	//将接口转换为指针类型的接口
+	for i := range vals {
+		valsp[i] = &vals[i]
+	}
+	// valps [&id,&role_name]
+	//解析查询结果
+	for rows.Next() {
+		if err := rows.Scan(valsp...); err == nil { //注意：此处用valsp
+			//var value string
+			//for i, col := range vals { //注意：此处用vals
+			//	if col == nil {
+			//		value = "NULL"
+			//	} else {
+			//		value = string(col)
+			//	}
+			//	//注意：读取的数据是uint8类型的数组，需要转成byte类型的数组才好转换成其他
+			//	fmt.Println(cols[i], ":", value) //输出各个列
+			//}
+		} else {
+			return err
+		}
+		result = append(result, feModal.SelectOption{
+			Label: string(vals[1]),
+			Value: string(vals[0]),
+		})
+	}
+	return c.JSON(http.StatusOK, result)
 }

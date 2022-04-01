@@ -1,9 +1,10 @@
 package controller
 
 import (
+	"bookManagementSystem/api/feModal"
 	"bookManagementSystem/modal"
+	"bookManagementSystem/untils/sqlUntils"
 	"fmt"
-	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -12,48 +13,63 @@ import (
 func CreateAddUser(c echo.Context) error {
 	var u = modal.NewUser()
 	if err := c.Bind(u); err != nil {
-		return c.String(http.StatusOK, err.Error())
+		return c.String(http.StatusBadRequest, err.Error())
 	}
 	createUserStr := "insert into user(user_name,user_password,sex,birthday,borrow_book_count,phone,email,remake,role) values(?,?,?,?,?,?,?,?,?)"
 	stmt, err := db.Prepare(createUserStr)
 	if err != nil {
-		return c.String(http.StatusOK, err.Error())
+		return c.String(http.StatusInternalServerError, err.Error())
 
 	}
 	defer stmt.Close()
 	Result, err := stmt.Exec(u.User_name, u.User_password, u.Sex, u.Birthday, u.Borrow_book_count, u.Phone, u.Email, u.Remake, u.Role)
 	if err != nil {
-		return c.String(http.StatusOK, err.Error())
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	fmt.Println(Result.RowsAffected())
 	return c.JSON(http.StatusOK, modal.Success("add success"))
 }
 
 func QueryUser(c echo.Context) error {
-	fmt.Println(c.Request().Header)
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-	fmt.Println(name)
-	u := modal.NewUserWithAllKeys()
-	queryUserStr := "select user_name,user_password,sex,birthday,borrow_book_count,phone,email,remake,role from user"
-
-	if userName := c.FormValue("filter_user_name"); userName != "" {
-		queryUserStr = queryUserStr + " where user_name= " + fmt.Sprintf("'%s'", userName)
+	var u = new(feModal.QueryUserParams)
+	if err := c.Bind(u); err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
 	}
-	if sex := c.FormValue("order_by"); sex != "" {
-		queryUserStr = queryUserStr + "order by " + sex
-	}
+	var paramMap = make(map[string]interface{})
+	paramMap["user_name"] = u.User_name
+	paramMap["role"] = u.Role
+	paramMap["borrow_book_count"] = u.Borrow_book_count
+	whereCon := sqlUntils.CreateWhereSql(paramMap)
+	orderBySql := sqlUntils.CreateOrderSql(u.Order_by, u.Order_type)
+	LimitSql := sqlUntils.CreateLimitSql(u.Current, u.PageSize)
+	fmt.Printf(LimitSql)
+	queryUserStr := fmt.Sprintf("select id,user_name,sex,birthday,borrow_book_count,phone,email,remake,role from user  %s %s %s", whereCon, orderBySql, LimitSql)
 	stmt, err := db.Prepare(queryUserStr)
 	if err != nil {
 		return c.String(http.StatusOK, err.Error())
 	}
 	defer stmt.Close()
-	err = stmt.QueryRow().Scan(&u.User_name, &u.User_password, &u.Sex, &u.Birthday, &u.Borrow_book_count, &u.Phone, &u.Remake, &u.Email, &u.Role)
+	rows, err := stmt.Query()
 	if err != nil {
 		return c.JSON(http.StatusOK, err.Error())
 	}
-	return c.JSON(http.StatusOK, modal.Success(&u))
+	defer rows.Close()
+	var rs []feModal.User
+	for rows.Next() {
+		var r feModal.User
+		err := rows.Scan(&r.Id, &r.User_name, &r.Sex, &r.Birthday, &r.Borrow_book_count, &r.Phone, &r.Email, &r.Remake, &r.Role)
+		if err != nil {
+			return c.JSON(http.StatusOK, modal.Err(404, err.Error()))
+		}
+		rs = append(rs, r)
+	}
+	queryCount := "select COUNT(id) from user"
+	var a int
+	db.QueryRow(queryCount).Scan(&a)
+	if err != nil {
+		return c.JSON(http.StatusOK, modal.Err(404, err.Error()))
+	}
+	return c.JSON(http.StatusOK, modal.TableSucc(rs, a))
 }
 
 func UpdateUser(c echo.Context) error {
@@ -73,11 +89,11 @@ func DeleteUser(c echo.Context) error {
 	fmt.Println(c.QueryParam("id"))
 	stmt, err := db.Prepare(deleteUserSql)
 	if err != nil {
-		return c.JSON(http.StatusOK, err.Error())
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	_, err = stmt.Exec(c.QueryParam("id"))
 	if err != nil {
-		return c.JSON(http.StatusOK, err.Error())
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, modal.Success("delete success"))
 }

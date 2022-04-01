@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/golang-jwt/jwt"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"time"
 )
@@ -13,16 +13,16 @@ type JwtCustomClaims struct {
 }
 
 func CreateToken(name string, admin bool) (map[string]interface{}, error) {
-	claims := &JwtCustomClaims{
+	claims := JwtCustomClaims{
 		name,
 		admin,
 		jwt.StandardClaims{
+			Id:        "jwt_id",
 			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 		},
 	}
-
 	// Create token with claims
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 
 	// Generate encoded token and return.
 	t, err := token.SignedString([]byte("secret"))

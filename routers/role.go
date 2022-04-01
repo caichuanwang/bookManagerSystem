@@ -10,4 +10,5 @@ func HandleRoleRoute(c *echo.Group) {
 	go c.POST("/role/list", controller.QueryRole)
 	go c.POST("/role/update", controller.UpdateRole)
 	go c.GET("/role/delete", controller.DeleteRole)
+	go c.GET("/role/option", controller.QueryRoleOptions)
 }

@@ -2,59 +2,33 @@ package sqlUntils
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
 	"strconv"
 	"strings"
 )
 
-func CreateWhereSql(c echo.Context, param ...string) string {
+func CreateWhereSql(param map[string]interface{}) string {
 	if len(param) == 0 {
 		return ""
 	}
 	var str string = "where "
-	for _, item := range param {
-		if c.FormValue("filter_"+item) != "" {
-			str += fmt.Sprintf(" %s LIKE '%%%s%%' and ", item, c.FormValue("filter_"+item))
+	for key, value := range param {
+		if value != "" {
+			str += fmt.Sprintf(" %s LIKE '%%%s%%' and ", key, value)
 		}
 	}
-	return str[0:strings.LastIndex(str, "and")]
-}
-
-func CreateOrderSql(c echo.Context) string {
-	var str string = " Order By "
-	var val = c.FormValue("order_by")
-	if val != "" {
-		switch interface{}(val).(type) {
-		case string:
-			str += c.FormValue("order_by")
-			break
-		case []string:
-			for _, item := range val {
-				str += fmt.Sprintf(" %s ,", item)
-			}
-			break
-		}
-		return str
-	} else {
-		return ""
-	}
-}
-
-func CreateLimitSql(c echo.Context) string {
-	var str = " LIMIT "
-	pageSize := c.FormValue("page_size")
-	pageIndex := c.FormValue("page_index")
-	if pageSize != "" && pageSize != "" {
-		pageIndexInt, err := strconv.Atoi(pageIndex)
-		pageSizeInt, err := strconv.Atoi(pageSize)
-		if err != nil {
-			return err.Error()
-		}
-		if pageSize != "" && pageIndex != "" {
-			str += fmt.Sprintf("%s,%s", strconv.Itoa(pageSizeInt*(pageIndexInt-1)), pageSize)
-			return str
-
-		}
+	if strings.LastIndex(str, "and") > 0 {
+		return str[0:strings.LastIndex(str, "and")]
 	}
 	return ""
+}
+
+func CreateOrderSql(orderBy string, orderType string) string {
+	if orderBy == "" {
+		return ""
+	}
+	return fmt.Sprintf(" ORDER BY  %s %s", orderBy, orderType)
+}
+
+func CreateLimitSql(current int, pageSize int) string {
+	return fmt.Sprintf(" LIMIT %s,%s", strconv.Itoa(pageSize*(current-1)), strconv.Itoa(pageSize))
 }
