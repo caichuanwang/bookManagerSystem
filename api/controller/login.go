@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"bookManagementSystem/api/middleware"
-	"bookManagementSystem/modal"
-	"bookManagementSystem/untils"
+	"bookManagerSystem/api/middleware"
+	"bookManagerSystem/modal"
+	"bookManagerSystem/untils"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
@@ -16,10 +16,15 @@ type LoginParams struct {
 	User_name     string `json:"user_name"`
 	User_password string `json:"user_password"`
 }
+type LoginReturn struct {
+	Token    any    `json:"token"`
+	userName string `json:"userName"`
+}
 
 func HandleLoginController(c echo.Context) error {
 	var req = new(LoginParams)
 	c.Bind(req)
+
 	//var u = modal.NewUser()
 	//defer c.Request().Body.Close()
 	//b, err := ioutil.ReadAll(c.Request().Body)
@@ -34,17 +39,20 @@ func HandleLoginController(c echo.Context) error {
 	row := db.QueryRow(queryStr, req.User_name)
 	err := row.Scan(&u1.User_name, &u1.User_password, &u1.Role)
 	if err != nil {
-		return c.JSON(http.StatusOK, modal.Err(http.StatusUnauthorized, "user is not exist"))
+		return c.JSON(http.StatusUnauthorized, modal.Err("user is not exist"))
 	}
 	if req.User_password == u1.User_password {
 		token, err := middleware.CreateToken(u1.User_name, u1.Role == "1")
 		if err != nil {
 			return c.JSON(http.StatusOK, err.Error())
 		} else {
-			return c.JSON(http.StatusOK, modal.Success(token))
+			return c.JSON(http.StatusOK, modal.Success(&LoginReturn{
+				Token:    token["token"],
+				userName: u1.User_name,
+			}))
 		}
 	} else {
-		return c.JSON(http.StatusOK, modal.Err(http.StatusUnauthorized, "password error"))
+		return c.JSON(http.StatusUnauthorized, modal.Err("password error"))
 	}
 
 }

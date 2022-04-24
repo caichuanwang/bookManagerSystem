@@ -2,8 +2,25 @@ package modal
 
 type User struct {
 	Id                int64  `json:"id,omitempty" form:"id"`
-	User_name         string `json:"user_name" form:"user_name"`
+	User_name         string `json:"user_name" form:"user_name" valid:"type(string),required"`
 	User_password     string `json:"user_password" form:"user_password"`
+	Sex               int8   `json:"sex,omitempty" form:"sex" valid:"type(int)"`
+	Birthday          string `json:"birthday" form:"birthday"`
+	Borrow_book_count int    `json:"borrow_book_count,omitempty" form:"borrow_book_count" valid:"type(int),range(0|5)" `
+	Phone             string `json:"phone,omitempty" form:"phone"`
+	Remake            string `json:"remake,omitempty" form:"remake"`
+	Email             string `json:"email,omitempty" form:"email" valid:"email"`
+	Role              string `json:"role" form:"role" `
+	RoleName          string `json:"roleName" form:"roleName"`
+}
+
+func NewUser() *User {
+	return &User{}
+}
+
+type UserListResult struct {
+	Id                int64  `json:"id,omitempty" form:"id"`
+	User_name         string `json:"user_name,omitempty" form:"user_name" valid:"string"`
 	Sex               int8   `json:"sex,omitempty" form:"sex"`
 	Birthday          string `json:"birthday" form:"birthday"`
 	Borrow_book_count int    `json:"borrow_book_count,omitempty" form:"borrow_book_count"`
@@ -11,23 +28,12 @@ type User struct {
 	Remake            string `json:"remake,omitempty" form:"remake"`
 	Email             string `json:"email,omitempty" form:"email"`
 	Role              string `json:"role" form:"role"`
+	RoleName          string `json:"roleName" from:"roleName"`
 }
-
-func NewUser() *User {
-	return &User{}
-}
-
-func NewUserWithAllKeys() *User {
-	return &User{
-		Id:                0,
-		User_name:         "",
-		User_password:     "",
-		Sex:               0,
-		Birthday:          "",
-		Borrow_book_count: 0,
-		Phone:             "",
-		Remake:            "",
-		Email:             "",
-		Role:              "",
-	}
+type QueryUserParams struct {
+	User_name         string `json:"user_name" form:"user_name"`
+	Borrow_book_count string `json:"borrow_book_count" form:"borrow_book_count"`
+	Role              string `json:"role" form:"role"`
+	Page
+	OrderBy
 }

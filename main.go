@@ -1,19 +1,25 @@
 package main
 
 import (
-	controller "bookManagementSystem/api/controller"
-	"bookManagementSystem/routers"
-	"bookManagementSystem/untils"
+	"bookManagerSystem/api/controller"
+	_ "bookManagerSystem/docs"
+	"bookManagerSystem/routers"
+	"bookManagerSystem/untils"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
+// @title Swagger Example API
+// @host petstore.swagger.io
+// @BasePath /v1
 func main() {
 	e := echo.New()
 	e.Static("/", "static")
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Any("/*", echoSwagger.WrapHandler)
 	//自定义中间件
 	//e.Use(filter.CustomFilter)
 	e.POST("/login", controller.HandleLoginController)

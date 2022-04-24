@@ -1,0 +1,56 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Swagger Example API",
+        "contact": {}
+    },
+    "host": "petstore.swagger.io",
+    "basePath": "/v1",
+    "paths": {
+        "/user/add": {
+            "post": {
+                "description": "查询用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "summary": "查询用户",
+                "parameters": [
+                    {
+                        "description": "userName",
+                        "name": "user_name",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "userPassword",
+                        "name": "user_password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/modal.Result"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "modal.Result": {
+            "type": "object",
+            "properties": {
+                "data": {}
+            }
+        }
+    }
+}

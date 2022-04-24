@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"bookManagementSystem/untils"
+	"bookManagerSystem/untils"
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"

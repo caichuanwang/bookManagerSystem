@@ -1,7 +1,7 @@
 package routers
 
 import (
-	controller "bookManagementSystem/api/controller"
+	"bookManagerSystem/api/controller"
 	"github.com/labstack/echo/v4"
 )
 

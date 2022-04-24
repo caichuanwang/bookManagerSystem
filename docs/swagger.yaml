@@ -1,0 +1,36 @@
+basePath: /v1
+definitions:
+  modal.Result:
+    properties:
+      data: {}
+    type: object
+host: petstore.swagger.io
+info:
+  contact: {}
+  title: Swagger Example API
+paths:
+  /user/add:
+    post:
+      consumes:
+      - application/json
+      description: 查询用户
+      parameters:
+      - description: userName
+        in: body
+        name: user_name
+        required: true
+        schema:
+          type: string
+      - description: userPassword
+        in: body
+        name: user_password
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.Result'
+      summary: 查询用户
+swagger: "2.0"
