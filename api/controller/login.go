@@ -21,6 +21,12 @@ type LoginReturn struct {
 	userName string `json:"userName"`
 }
 
+// HandleLoginController @Summary 登陆
+// @Description 登陆
+// @Accept json
+// @Param req body controller.LoginParams true "登陆用户名和密码"
+// @Success 200 {object} modal.Result
+// @Router /login [post]
 func HandleLoginController(c echo.Context) error {
 	var req = new(LoginParams)
 	c.Bind(req)
@@ -41,7 +47,8 @@ func HandleLoginController(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, modal.Err("user is not exist"))
 	}
-	if req.User_password == u1.User_password {
+	cryptoPwd := untils.CryptoWithMD5(req.User_password)
+	if cryptoPwd == u1.User_password {
 		token, err := middleware.CreateToken(u1.User_name, u1.Role == "1")
 		if err != nil {
 			return c.JSON(http.StatusOK, err.Error())

@@ -1,29 +1,163 @@
 basePath: /v1
 definitions:
+  controller.LoginParams:
+    properties:
+      user_name:
+        type: string
+      user_password:
+        type: string
+    type: object
+  modal.QueryUserParams:
+    properties:
+      borrow_book_count:
+        type: string
+      current:
+        type: integer
+      order_by:
+        type: string
+      order_type:
+        type: string
+      pageSize:
+        type: integer
+      role:
+        type: string
+      user_name:
+        type: string
+    type: object
   modal.Result:
     properties:
       data: {}
+    type: object
+  modal.Role:
+    properties:
+      id:
+        type: integer
+      role_name:
+        type: string
+      role_weight:
+        type: integer
+    type: object
+  modal.RoleListResult:
+    properties:
+      id:
+        type: integer
+      role_name:
+        type: string
+      role_weight:
+        type: string
+    type: object
+  modal.RoleParams:
+    properties:
+      current:
+        type: integer
+      pageSize:
+        type: integer
+      role_name:
+        type: string
+    type: object
+  modal.SelectOption:
+    properties:
+      label:
+        type: string
+      value:
+        type: string
+    type: object
+  modal.User:
+    properties:
+      birthday:
+        type: string
+      borrow_book_count:
+        type: integer
+      email:
+        type: string
+      id:
+        type: integer
+      phone:
+        type: string
+      remake:
+        type: string
+      role:
+        type: string
+      roleName:
+        type: string
+      sex:
+        type: integer
+      user_name:
+        type: string
+      user_password:
+        type: string
+    type: object
+  modal.UserListResult:
+    properties:
+      birthday:
+        type: string
+      borrow_book_count:
+        type: integer
+      email:
+        type: string
+      id:
+        type: integer
+      phone:
+        type: string
+      remake:
+        type: string
+      role:
+        type: string
+      roleName:
+        type: string
+      sex:
+        type: integer
+      user_name:
+        type: string
     type: object
 host: petstore.swagger.io
 info:
   contact: {}
   title: Swagger Example API
 paths:
-  /user/add:
+  /login:
     post:
       consumes:
       - application/json
-      description: 查询用户
+      description: 登陆
       parameters:
-      - description: userName
+      - description: 登陆用户名和密码
         in: body
-        name: user_name
+        name: req
         required: true
         schema:
-          type: string
-      - description: userPassword
+          $ref: '#/definitions/controller.LoginParams'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.Result'
+  /v1/role/add:
+    post:
+      consumes:
+      - application/json
+      description: 新增角色
+      parameters:
+      - description: 新增角色的数据
         in: body
-        name: user_password
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/modal.Role'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.Result'
+  /v1/role/delete:
+    delete:
+      consumes:
+      - application/json
+      description: 删除角色
+      parameters:
+      - description: 删除角色的id
+        in: body
+        name: id
         required: true
         schema:
           type: string
@@ -32,5 +166,115 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/modal.Result'
-      summary: 查询用户
+  /v1/role/list:
+    post:
+      consumes:
+      - application/json
+      description: 查询角色
+      parameters:
+      - description: 查询角色的信息
+        in: body
+        name: req
+        schema:
+          $ref: '#/definitions/modal.RoleParams'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.RoleListResult'
+  /v1/role/option:
+    get:
+      consumes:
+      - application/json
+      description: 查询角色的下拉选项
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.SelectOption'
+  /v1/role/update:
+    post:
+      consumes:
+      - application/json
+      description: 修改角色
+      parameters:
+      - description: 新增角色的数据
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/modal.Role'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.Result'
+  /v1/user/add:
+    post:
+      consumes:
+      - application/json
+      description: 新增用户
+      parameters:
+      - description: 新增用户的数据
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/modal.User'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.Result'
+  /v1/user/delete:
+    delete:
+      consumes:
+      - application/json
+      description: 删除用户
+      parameters:
+      - description: 删除用户
+        in: body
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.Result'
+  /v1/user/list:
+    post:
+      consumes:
+      - application/json
+      description: 查询用户
+      parameters:
+      - description: 查询用户的信息
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/modal.QueryUserParams'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.UserListResult'
+  /v1/user/update:
+    post:
+      consumes:
+      - application/json
+      description: 修改用户
+      parameters:
+      - description: 修改用户的数据
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/modal.User'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.Result'
 swagger: "2.0"
