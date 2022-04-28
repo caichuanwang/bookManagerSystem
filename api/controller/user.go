@@ -103,7 +103,6 @@ func UpdateUser(c echo.Context) error {
 }
 func DeleteUser(c echo.Context) error {
 	deleteUserSql := "delete from user where id = ?"
-	fmt.Println(c.QueryParam("id"))
 	stmt, err := db.Prepare(deleteUserSql)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())

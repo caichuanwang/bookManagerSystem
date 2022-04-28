@@ -7,4 +7,5 @@ import (
 func InitRouter(c *echo.Group) {
 	HandleUserRoute(c)
 	HandleRoleRoute(c)
+	HandleBookTypeRouter(c)
 }
