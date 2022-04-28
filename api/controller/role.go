@@ -8,6 +8,12 @@ import (
 	"net/http"
 )
 
+// CreateRole @Summary 新增角色
+// @Description 新增角色
+// @Accept json
+// @Param role body  modal.Role true "新增角色的数据"
+// @Success 200 {object} modal.Result
+// @Router /v1/role/add [post]
 func CreateRole(c echo.Context) error {
 	r := modal.NewRole()
 	if err := c.Bind(r); err != nil {
@@ -25,6 +31,12 @@ func CreateRole(c echo.Context) error {
 	return c.JSON(http.StatusOK, modal.Success("add success"))
 }
 
+// QueryRole @Summary 查询角色
+// @Description 查询角色
+// @Accept json
+// @Param req body modal.RoleParams false "查询角色的信息"
+// @Success 200 {object} modal.RoleListResult
+// @Router /v1/role/list [post]
 func QueryRole(c echo.Context) error {
 	queryRoleSql := fmt.Sprintf("select id,role_name,role_weight from role")
 	stmt, err := db.Prepare(queryRoleSql)
@@ -54,6 +66,12 @@ func QueryRole(c echo.Context) error {
 	return c.JSON(http.StatusOK, modal.TableSucc(rs, a))
 }
 
+// UpdateRole @Summary 修改角色
+// @Description 修改角色
+// @Accept json
+// @Param role body  modal.Role true "新增角色的数据"
+// @Success 200 {object} modal.Result
+// @Router /v1/role/update [post]
 func UpdateRole(c echo.Context) error {
 	r := modal.NewRole()
 	if err := c.Bind(r); err != nil {
@@ -71,6 +89,12 @@ func UpdateRole(c echo.Context) error {
 	return c.JSON(http.StatusOK, modal.Success("add success"))
 }
 
+// DeleteRole @Summary 删除角色
+// @Description 删除角色
+// @Accept json
+// @Param id body string true "删除角色的id"
+// @Success 200 {object} modal.Result
+// @Router /v1/role/delete [delete]
 func DeleteRole(c echo.Context) error {
 	deleteRoleSql := "delete from role where id = ?"
 	_, err := db.Exec(deleteRoleSql, c.QueryParam("id"))
@@ -80,6 +104,11 @@ func DeleteRole(c echo.Context) error {
 	return c.String(http.StatusOK, "success")
 }
 
+// QueryRoleOptions @Summary 查询角色的下拉选项
+// @Description 查询角色的下拉选项
+// @Accept json
+// @Success 200 {object} modal.SelectOption
+// @Router /v1/role/option [get]
 func QueryRoleOptions(c echo.Context) error {
 	queryRole := "select id,role_name from role"
 	rows, err := db.Query(queryRole)

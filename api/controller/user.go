@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bookManagerSystem/modal"
+	"bookManagerSystem/untils"
 	"bookManagerSystem/untils/sqlUntils"
 	"fmt"
 	"github.com/asaskevich/govalidator"
@@ -9,13 +10,12 @@ import (
 	"net/http"
 )
 
-// @Summary 查询用户
-// @Description 查询用户
+// CreateAddUser @Summary 新增用户
+// @Description 新增用户
 // @Accept json
-// @Param user_name body string true "userName"
-// @Param user_password body string true "userPassword"
+// @Param user body  modal.User true "新增用户的数据"
 // @Success 200 {object} modal.Result
-// @Router /user/add [post]
+// @Router /v1/user/add [post]
 func CreateAddUser(c echo.Context) error {
 	var u = modal.NewUser()
 	if err := c.Bind(u); err != nil {
@@ -25,6 +25,8 @@ func CreateAddUser(c echo.Context) error {
 	if err != nil || !ok {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
+	fmt.Println(u.User_password)
+	cryptoPwd := untils.CryptoWithMD5(u.User_password)
 	createUserStr := "insert into user(user_name,user_password,sex,birthday,borrow_book_count,phone,email,remake,role) values(?,?,?,?,?,?,?,?,?)"
 	stmt, err := db.Prepare(createUserStr)
 	if err != nil {
@@ -32,7 +34,7 @@ func CreateAddUser(c echo.Context) error {
 
 	}
 	defer stmt.Close()
-	Result, err := stmt.Exec(u.User_name, u.User_password, u.Sex, u.Birthday, u.Borrow_book_count, u.Phone, u.Email, u.Remake, u.Role)
+	Result, err := stmt.Exec(u.User_name, cryptoPwd, u.Sex, u.Birthday, u.Borrow_book_count, u.Phone, u.Email, u.Remake, u.Role)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -40,6 +42,12 @@ func CreateAddUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, modal.Success("add success"))
 }
 
+// QueryUser @Summary 查询用户
+// @Description 查询用户
+// @Accept json
+// @Param req body modal.QueryUserParams true  "查询用户的信息"
+// @Success 200 {object} modal.UserListResult
+// @Router /v1/user/list [post]
 func QueryUser(c echo.Context) error {
 	var u = new(modal.QueryUserParams)
 	if err := c.Bind(u); err != nil {
@@ -81,6 +89,12 @@ func QueryUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, modal.TableSucc(rs, a))
 }
 
+// UpdateUser @Summary 修改用户
+// @Description 修改用户
+// @Accept json
+// @Param user body  modal.User true "修改用户的数据"
+// @Success 200 {object} modal.Result
+// @Router /v1/user/update [post]
 func UpdateUser(c echo.Context) error {
 	var u = modal.NewUser()
 	if err := c.Bind(u); err != nil {
@@ -101,6 +115,13 @@ func UpdateUser(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, modal.Success("update success"))
 }
+
+// DeleteUser @Summary 删除用户
+// @Description 删除用户
+// @Accept json
+// @Param id body string true "删除用户"
+// @Success 200 {object} modal.Result
+// @Router /v1/user/delete [delete]
 func DeleteUser(c echo.Context) error {
 	deleteUserSql := "delete from user where id = ?"
 	stmt, err := db.Prepare(deleteUserSql)
