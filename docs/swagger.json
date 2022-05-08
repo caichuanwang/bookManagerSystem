@@ -34,6 +34,133 @@
                 }
             }
         },
+        "/v1/bookType/add": {
+            "post": {
+                "description": "新增📖类型",
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "description": "新增📖的数据",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/modal.BookType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/modal.Result"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/bookType/delete": {
+            "delete": {
+                "description": "删除图书分类",
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "description": "删除图书分类的🆔",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/modal.Result"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/bookType/list": {
+            "post": {
+                "description": "获取图书分类列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "description": "查询参数",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/modal.BookTypeReqParams"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/modal.TableResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/bookType/treeList": {
+            "get": {
+                "description": "返回树形结构的图书类型",
+                "consumes": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/modal.TreeBookType"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/bookType/update": {
+            "post": {
+                "description": "更新图书分类列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "description": "更新参数",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/modal.BookType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/modal.Result"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/role/add": {
             "post": {
                 "description": "新增角色",
@@ -278,6 +405,55 @@
                 }
             }
         },
+        "modal.BookType": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "pId": {
+                    "type": "integer"
+                },
+                "remake": {
+                    "type": "string"
+                },
+                "typeName": {
+                    "type": "string"
+                }
+            }
+        },
+        "modal.BookTypeReqParams": {
+            "type": "object",
+            "properties": {
+                "current": {
+                    "type": "integer"
+                },
+                "keyWord": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "order_by": {
+                    "type": "string"
+                },
+                "order_type": {
+                    "type": "string"
+                },
+                "pName": {
+                    "type": "string"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "typeName": {
+                    "type": "string"
+                }
+            }
+        },
         "modal.QueryUserParams": {
             "type": "object",
             "properties": {
@@ -359,6 +535,41 @@
                     "type": "string"
                 },
                 "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "modal.TableResult": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "modal.TreeBookType": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/modal.TreeBookType"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pId": {
+                    "type": "integer"
+                },
+                "remake": {
                     "type": "string"
                 }
             }

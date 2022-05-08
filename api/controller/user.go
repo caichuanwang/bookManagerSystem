@@ -58,6 +58,7 @@ func QueryUser(c echo.Context) error {
 	paramMap["role"] = u.Role
 	paramMap["borrow_book_count"] = u.Borrow_book_count
 	whereCon := sqlUntils.CreateWhereSql(paramMap)
+	fmt.Println(whereCon)
 	orderBySql := sqlUntils.CreateOrderSql(u.Order_by, u.Order_type)
 	LimitSql := sqlUntils.CreateLimitSql(u.Current, u.PageSize)
 	queryUserStr := fmt.Sprintf("select id,user_name,sex,birthday,borrow_book_count,phone,email,remake,role, (SELECT role_name FROM role WHERE role.id = role ) AS roleName from user  %s %s %s", whereCon, orderBySql, LimitSql)

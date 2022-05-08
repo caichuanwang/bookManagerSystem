@@ -7,6 +7,38 @@ definitions:
       user_password:
         type: string
     type: object
+  modal.BookType:
+    properties:
+      id:
+        type: integer
+      level:
+        type: string
+      pId:
+        type: integer
+      remake:
+        type: string
+      typeName:
+        type: string
+    type: object
+  modal.BookTypeReqParams:
+    properties:
+      current:
+        type: integer
+      keyWord:
+        type: string
+      level:
+        type: string
+      order_by:
+        type: string
+      order_type:
+        type: string
+      pName:
+        type: string
+      pageSize:
+        type: integer
+      typeName:
+        type: string
+    type: object
   modal.QueryUserParams:
     properties:
       borrow_book_count:
@@ -60,6 +92,29 @@ definitions:
       label:
         type: string
       value:
+        type: string
+    type: object
+  modal.TableResult:
+    properties:
+      data: {}
+      total:
+        type: integer
+    type: object
+  modal.TreeBookType:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/modal.TreeBookType'
+        type: array
+      id:
+        type: integer
+      level:
+        type: string
+      name:
+        type: string
+      pId:
+        type: integer
+      remake:
         type: string
     type: object
   modal.User:
@@ -127,6 +182,86 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/controller.LoginParams'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.Result'
+  /v1/bookType/add:
+    post:
+      consumes:
+      - application/json
+      description: "新增\U0001F4D6类型"
+      parameters:
+      - description: "新增\U0001F4D6的数据"
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/modal.BookType'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.Result'
+  /v1/bookType/delete:
+    delete:
+      consumes:
+      - application/json
+      description: 删除图书分类
+      parameters:
+      - description: "删除图书分类的\U0001F194"
+        in: body
+        name: user
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.Result'
+  /v1/bookType/list:
+    post:
+      consumes:
+      - application/json
+      description: 获取图书分类列表
+      parameters:
+      - description: 查询参数
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/modal.BookTypeReqParams'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modal.TableResult'
+  /v1/bookType/treeList:
+    get:
+      consumes:
+      - application/json
+      description: 返回树形结构的图书类型
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/modal.TreeBookType'
+            type: array
+  /v1/bookType/update:
+    post:
+      consumes:
+      - application/json
+      description: 更新图书分类列表
+      parameters:
+      - description: 更新参数
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/modal.BookType'
       responses:
         "200":
           description: OK

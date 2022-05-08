@@ -6,14 +6,18 @@ import (
 	"strings"
 )
 
-func CreateWhereSql(param map[string]interface{}) string {
+func CreateWhereSql(param map[string]interface{}, other ...string) string {
 	if len(param) == 0 {
 		return ""
 	}
-	var str string = "where "
+	var str = "where "
+	var dbName = ""
+	if other != nil && other[0] != "" {
+		dbName = fmt.Sprintf("%s.", other[0])
+	}
 	for key, value := range param {
 		if value != "" {
-			str += fmt.Sprintf(" %s LIKE '%%%s%%' and ", key, value)
+			str += fmt.Sprintf(" %s%s LIKE '%%%s%%' and ", dbName, key, value)
 		}
 	}
 	if strings.LastIndex(str, "and") > 0 {

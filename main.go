@@ -16,7 +16,7 @@ import (
 // @BasePath /v1
 func main() {
 	e := echo.New()
-	e.Static("/", "static")
+	e.Static("/static", "static")
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Any("/*", echoSwagger.WrapHandler)

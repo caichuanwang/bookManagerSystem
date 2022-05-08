@@ -9,5 +9,6 @@ func HandleBookTypeRouter(e *echo.Group) {
 	e.POST("/bookType/add", controller.CreateBookType)
 	e.POST("/bookType/list", controller.GetBookTypeList)
 	e.POST("/bookType/update", controller.UpdateBookType)
-	e.GET("/bookType/delete", controller.DeleteBookType)
+	e.DELETE("/bookType/delete", controller.DeleteBookType)
+	e.GET("/bookType/treeList", controller.GetBookTypeWithTree)
 }
