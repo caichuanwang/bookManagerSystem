@@ -14,5 +14,5 @@ type OrderBy struct {
 	Order_type string `json:"order_type"`
 }
 type KeyWords struct {
-	KeyWord string `json:"keyWord",form:"keyWord",valid:"type(string)"`
+	KeyWord string `json:"keyWord" form:"keyWord" valid:"type(string)"`
 }

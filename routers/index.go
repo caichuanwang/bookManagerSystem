@@ -9,4 +9,5 @@ func InitRouter(c *echo.Group) {
 	HandleRoleRoute(c)
 	HandleBookTypeRouter(c)
 	HandleBookInfoRouter(c)
+	HandleBorrowRouter(c)
 }

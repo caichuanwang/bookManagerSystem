@@ -25,7 +25,7 @@ func main() {
 	e.POST("/login", controller.HandleLoginController)
 	//初始化连接数据库实例
 	go controller.DriverMySQL()
-
+	go controller.ConnectRedis()
 	r := e.Group("/v1")
 	r.Use(middleware.JWTWithConfig(middleware.JWTConfig{SigningMethod: "HS512", SigningKey: []byte("secret")}))
 	routers.InitRouter(r)

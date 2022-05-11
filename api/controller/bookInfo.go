@@ -51,7 +51,6 @@ func QueryBookList(c echo.Context) error {
 	orderBySql := sqlUntils.CreateOrderSql(u.Order_by, u.Order_type)
 	LimitSql := sqlUntils.CreateLimitSql(u.Current, u.PageSize)
 	queryStr := fmt.Sprintf("select isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum,(select typeName from book_type where id = bookInfo.typeId ) as typeName from bookInfo %s %s %s ", whereCon, orderBySql, LimitSql)
-	fmt.Println(queryStr)
 	stmt, err := db.Prepare(queryStr)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())

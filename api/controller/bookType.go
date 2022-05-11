@@ -53,7 +53,6 @@ func GetBookTypeList(c echo.Context) error {
 	paramMap["level"] = u.Level
 	paramMap["pName"] = u.PName
 	whereCon := sqlUntils.CreateWhereSql(paramMap)
-	fmt.Println(whereCon)
 	orderBySql := sqlUntils.CreateOrderSql(u.Order_by, u.Order_type)
 	limitSql := sqlUntils.CreateLimitSql(u.Current, u.PageSize)
 	querySql := fmt.Sprintf("select id,typeName,level ,remake , pName, pId  from book_type_with_pName %s %s %s", whereCon, orderBySql, limitSql)
