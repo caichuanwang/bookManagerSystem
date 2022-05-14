@@ -30,3 +30,7 @@ type QueryBookInfoParams struct {
 	Page
 	OrderBy
 }
+type BookBorrowTopRes struct {
+	BookInfo
+	Score uint `json:"score"`
+}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/asaskevich/govalidator"
+	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
@@ -90,14 +91,15 @@ func CreateBorrow(c echo.Context) error {
 		_ = tx.Rollback()
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	strCmd := rdb.Exists(ctx, u.Borrow_book_isbn)
-	n := strCmd.Val()
-	if n == 0 { //没有这个key
-		if err := rdb.Set(ctx, u.Borrow_book_isbn, 0, 0).Err(); err != nil {
-			return nil
-		}
-	} else { //自增1
-		rdb.Incr(ctx, u.Borrow_book_isbn)
+	//使用zset重新写
+	intCmd := rdb.ZRank(ctx, modal.BOOK_BORROW_TOP_KEY_REDIS, u.Borrow_book_isbn)
+	if intCmd.Err() != nil { //没有
+		rdb.ZAdd(ctx, modal.BOOK_BORROW_TOP_KEY_REDIS, &redis.Z{
+			Score:  1,
+			Member: u.Borrow_book_isbn,
+		})
+	} else { //有
+		rdb.ZIncrBy(ctx, modal.BOOK_BORROW_TOP_KEY_REDIS, 1, u.Borrow_book_isbn)
 	}
 	return c.JSON(http.StatusOK, modal.Success("ok"))
 }

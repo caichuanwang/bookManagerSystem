@@ -4,7 +4,6 @@ import (
 	"bookManagerSystem/api/middleware"
 	"bookManagerSystem/modal"
 	"bookManagerSystem/untils"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -18,7 +17,8 @@ type LoginParams struct {
 }
 type LoginReturn struct {
 	Token    any    `json:"token"`
-	userName string `json:"userName"`
+	UserName string `json:"userName"`
+	UserId   int64  `json:"userId"`
 }
 
 // HandleLoginController @Summary 登陆
@@ -30,7 +30,6 @@ type LoginReturn struct {
 func HandleLoginController(c echo.Context) error {
 	var req = new(LoginParams)
 	c.Bind(req)
-
 	//var u = modal.NewUser()
 	//defer c.Request().Body.Close()
 	//b, err := ioutil.ReadAll(c.Request().Body)
@@ -41,9 +40,9 @@ func HandleLoginController(c echo.Context) error {
 	//json.Unmarshal(b, &u)
 	//上面注释的方式是使用流读取参数也是可以的
 	var u1 = modal.NewUser()
-	queryStr := fmt.Sprintf("select user_name,user_password,role from %s where user_name = ?", "user")
+	queryStr := "select user_name,user_password,role,id from user where user_name = ?"
 	row := db.QueryRow(queryStr, req.User_name)
-	err := row.Scan(&u1.User_name, &u1.User_password, &u1.Role)
+	err := row.Scan(&u1.User_name, &u1.User_password, &u1.Role, &u1.Id)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, modal.Err("user is not exist"))
 	}
@@ -55,7 +54,8 @@ func HandleLoginController(c echo.Context) error {
 		} else {
 			return c.JSON(http.StatusOK, modal.Success(&LoginReturn{
 				Token:    token["token"],
-				userName: u1.User_name,
+				UserName: u1.User_name,
+				UserId:   u1.Id,
 			}))
 		}
 	} else {

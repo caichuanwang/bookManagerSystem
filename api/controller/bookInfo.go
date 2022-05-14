@@ -6,8 +6,13 @@ import (
 	"bookManagerSystem/untils/sqlUntils"
 	"fmt"
 	"github.com/asaskevich/govalidator"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/samber/lo"
+	"sort"
+
+	//lop "github.com/samber/lo/parallel"
 	"net/http"
 	"path"
 )
@@ -109,4 +114,38 @@ func DeleteBookInfo(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, modal.Success("ok"))
+}
+
+func GetTopBookList(c echo.Context) error {
+	zSliceCmd := rdb.ZRevRangeWithScores(ctx, modal.BOOK_BORROW_TOP_KEY_REDIS, 0, 4)
+	isbns := zSliceCmd.Val()
+	fmt.Println(isbns)
+	var members []string
+	for _, item := range isbns {
+		members = append(members, item.Member.(string))
+	}
+	sum := untils.Join(members, ",")
+	fmt.Println(sum)
+	var res []modal.BookBorrowTopRes
+	querySql := fmt.Sprintf("select isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum,(select typeName from book_type where id = bookInfo.typeId ) as typeName from bookInfo where bookInfo.isbn in ( %s )", sum)
+	stmt, err := db.Prepare(querySql)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	rows, err := stmt.Query()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	for rows.Next() {
+		var u modal.BookBorrowTopRes
+		_ = rows.Scan(&u.Isbn, &u.BookName, &u.Author, &u.Translator, &u.Publisher, &u.PublishTime, &u.BookStock, &u.Price, &u.TypeId, &u.Context, &u.Photo, &u.PageNum, &u.TypeName)
+		u.Score = uint(lo.Filter[redis.Z](isbns, func(v redis.Z, _ int) bool {
+			return v.Member == u.Isbn
+		})[0].Score)
+		res = append(res, u)
+	}
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].Score > res[j].Score
+	})
+	return c.JSON(http.StatusOK, modal.Success(res))
 }

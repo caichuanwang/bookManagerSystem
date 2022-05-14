@@ -36,3 +36,5 @@ const (
 	NO_BORROW = iota + 1
 	BORROW
 )
+
+const BOOK_BORROW_TOP_KEY_REDIS = "book_borrow_top"
