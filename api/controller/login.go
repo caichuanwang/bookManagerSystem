@@ -40,7 +40,7 @@ func HandleLoginController(c echo.Context) error {
 	//json.Unmarshal(b, &u)
 	//上面注释的方式是使用流读取参数也是可以的
 	var u1 = modal.NewUser()
-	queryStr := "select user_name,user_password,role,id from user where user_name = ?"
+	queryStr := "select user_name,user_password,role,id from g_user where user_name = ?"
 	row := db.QueryRow(queryStr, req.User_name)
 	err := row.Scan(&u1.User_name, &u1.User_password, &u1.Role, &u1.Id)
 	if err != nil {
@@ -48,7 +48,7 @@ func HandleLoginController(c echo.Context) error {
 	}
 	cryptoPwd := untils.CryptoWithMD5(req.User_password)
 	if cryptoPwd == u1.User_password {
-		token, err := middleware.CreateToken(u1.User_name, u1.Role == "1")
+		token, err := middleware.CreateToken(u1.User_name, u1.Role == "1", u1.Id)
 		if err != nil {
 			return c.JSON(http.StatusOK, err.Error())
 		} else {

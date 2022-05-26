@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"github.com/asaskevich/govalidator"
 	"github.com/go-redis/redis/v8"
+	"github.com/jordan-wright/email"
 	"github.com/labstack/echo/v4"
+	"log"
 	"net/http"
 	"time"
 )
@@ -16,6 +18,7 @@ var ctx = context.Background()
 
 func CreateBorrow(c echo.Context) error {
 	var u = new(modal.Borrow)
+	var bookName string
 	if err := c.Bind(u); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -31,14 +34,14 @@ func CreateBorrow(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	var bookStock uint
-	queryBookStockSql := "select bookStock from bookInfo where isbn = ?"
+	queryBookStockSql := "select bookStock ,bookName from bookInfo where isbn = ?"
 	stmt, err := db.Prepare(queryBookStockSql)
 	if err != nil {
 		_ = tx.Rollback()
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	row := stmt.QueryRow(u.Borrow_book_isbn)
-	err = row.Scan(&bookStock)
+	err = row.Scan(&bookStock, &bookName)
 	if err != nil {
 		_ = tx.Rollback()
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -100,6 +103,21 @@ func CreateBorrow(c echo.Context) error {
 		})
 	} else { //有
 		rdb.ZIncrBy(ctx, modal.BOOK_BORROW_TOP_KEY_REDIS, 1, u.Borrow_book_isbn)
+	}
+	var e string
+	emailSql := "select email from user where id = ?"
+	stmt, err = db.Prepare(emailSql)
+	if err != nil {
+		log.Fatal("get Email failed :" + err.Error())
+	}
+	row = stmt.QueryRow(u.Borrow_reader_id)
+	err = row.Scan(&e)
+	if err != nil {
+		log.Fatal("get Email failed :" + err.Error())
+	}
+	if e != "" {
+		go SendEmail([]string{e}, "借书成功", "你于"+time.Now().Format("2006-01-02 15:04:05")+"成功借书"+bookName+",请联系管理员审核")
+
 	}
 	return c.JSON(http.StatusOK, modal.Success("ok"))
 }
@@ -169,4 +187,15 @@ func UpdateReturnStatus(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, modal.Success("ok"))
+}
+func SendEmail(to []string, subject string, text string) {
+	e := email.NewEmail()
+	e.From = "图书管理<1481410897@qq.com>"
+	e.To = to
+	e.Subject = subject
+	e.Text = []byte(text)
+	err := emailPool.Send(e, 25*time.Hour)
+	if err != nil {
+		log.Fatal("send email " + err.Error())
+	}
 }

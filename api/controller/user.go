@@ -25,20 +25,18 @@ func CreateAddUser(c echo.Context) error {
 	if err != nil || !ok {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	fmt.Println(u.User_password)
 	cryptoPwd := untils.CryptoWithMD5(u.User_password)
-	createUserStr := "insert into user(user_name,user_password,sex,birthday,borrow_book_count,phone,email,remake,role) values(?,?,?,?,?,?,?,?,?)"
+	createUserStr := "insert into g_user (user_name,user_password,sex,birthday,borrow_book_count,phone,email,remake,role) values(?,?,?,?,?,?,?,?,?)"
 	stmt, err := db.Prepare(createUserStr)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 
 	}
 	defer stmt.Close()
-	Result, err := stmt.Exec(u.User_name, cryptoPwd, u.Sex, u.Birthday, u.Borrow_book_count, u.Phone, u.Email, u.Remake, u.Role)
+	_, err = stmt.Exec(u.User_name, cryptoPwd, u.Sex, u.Birthday, u.Borrow_book_count, u.Phone, u.Email, u.Remake, u.Role)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	fmt.Println(Result.RowsAffected())
 	return c.JSON(http.StatusOK, modal.Success("add success"))
 }
 
@@ -58,10 +56,9 @@ func QueryUser(c echo.Context) error {
 	paramMap["role"] = u.Role
 	paramMap["borrow_book_count"] = u.Borrow_book_count
 	whereCon := sqlUntils.CreateWhereSql(paramMap)
-	fmt.Println(whereCon)
 	orderBySql := sqlUntils.CreateOrderSql(u.Order_by, u.Order_type)
 	LimitSql := sqlUntils.CreateLimitSql(u.Current, u.PageSize)
-	queryUserStr := fmt.Sprintf("select id,user_name,sex,birthday,borrow_book_count,phone,email,remake,role, (SELECT role_name FROM role WHERE role.id = role ) AS roleName from user  %s %s %s", whereCon, orderBySql, LimitSql)
+	queryUserStr := fmt.Sprintf("select id,user_name,sex,birthday,borrow_book_count,phone,email,remake,role, (SELECT role_name FROM role WHERE role.id = role ) AS roleName from g_user  %s %s %s", whereCon, orderBySql, LimitSql)
 	stmt, err := db.Prepare(queryUserStr)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -81,7 +78,7 @@ func QueryUser(c echo.Context) error {
 		}
 		rs = append(rs, r)
 	}
-	queryCount := "select COUNT(id) from user"
+	queryCount := "select COUNT(id) from g_user"
 	var a int
 	db.QueryRow(queryCount).Scan(&a)
 	if err != nil {
@@ -105,7 +102,7 @@ func UpdateUser(c echo.Context) error {
 	if err != nil || !ok {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	updateUserSQL := "update user set user_name = ?,role = ? ,sex = ? ,birthday = ?,email=?,phone = ?,remake=?,borrow_book_count=? where id = ?"
+	updateUserSQL := "update g_user set user_name = ?,role = ? ,sex = ? ,birthday = ?,email=?,phone = ?,remake=?,borrow_book_count=? where id = ?"
 	stmt, err := db.Prepare(updateUserSQL)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -124,7 +121,7 @@ func UpdateUser(c echo.Context) error {
 // @Success 200 {object} modal.Result
 // @Router /v1/user/delete [delete]
 func DeleteUser(c echo.Context) error {
-	deleteUserSql := "delete from user where id = ?"
+	deleteUserSql := "delete from g_user where id = ?"
 	stmt, err := db.Prepare(deleteUserSql)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())

@@ -2,7 +2,7 @@ package modal
 
 type SelectOption struct {
 	Label string `json:"label"`
-	Value string `json:"value"`
+	Value any    `json:"value"`
 }
 type Page struct {
 	Current  int `json:"current" form:"current"`

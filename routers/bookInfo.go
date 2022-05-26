@@ -10,4 +10,5 @@ func HandleBookInfoRouter(e *echo.Group) {
 	e.POST("/bookInfo/update", controller.UpdateBookInfo)
 	e.POST("/bookInfo/list", controller.QueryBookList)
 	e.DELETE("/bookInfo/delete", controller.DeleteBookInfo)
+	e.GET("/bookInfo/count", controller.OneBookCollectCount)
 }

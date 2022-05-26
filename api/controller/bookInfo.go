@@ -11,7 +11,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/samber/lo"
 	"sort"
-
 	//lop "github.com/samber/lo/parallel"
 	"net/http"
 	"path"
@@ -33,7 +32,7 @@ func CreateBook(c echo.Context) error {
 		imgPath = untils.ReadCon("book", "imgPath") + "/" + uuidStr + path.Ext(b.Photo[0]["name"].(string))
 		_ = untils.Base642Img(imgStr[22:], untils.ReadCon("book", "imgPath"), uuidStr+path.Ext(b.Photo[0]["name"].(string)))
 	}
-	createSql := "insert into bookInfo(isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum)values(?,?,?,?,?,?,?,?,?,?,?,?)"
+	createSql := "insert into g_book_info(isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum)values(?,?,?,?,?,?,?,?,?,?,?,?)"
 	stmt, err := db.Prepare(createSql)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -55,7 +54,7 @@ func QueryBookList(c echo.Context) error {
 	whereCon := sqlUntils.CreateWhereSql(paramMap)
 	orderBySql := sqlUntils.CreateOrderSql(u.Order_by, u.Order_type)
 	LimitSql := sqlUntils.CreateLimitSql(u.Current, u.PageSize)
-	queryStr := fmt.Sprintf("select isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum,(select typeName from book_type where id = bookInfo.typeId ) as typeName from bookInfo %s %s %s ", whereCon, orderBySql, LimitSql)
+	queryStr := fmt.Sprintf("select isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum,(select typeName from book_type where id = g_book_info.typeId ) as typeName from g_book_info %s %s %s ", whereCon, orderBySql, LimitSql)
 	stmt, err := db.Prepare(queryStr)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -64,16 +63,16 @@ func QueryBookList(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	var res []modal.BookInfo
+	var res []modal.BookInfoReturn
 	for rows.Next() {
-		var a modal.BookInfo
+		var a modal.BookInfoReturn
 		err = rows.Scan(&a.Isbn, &a.BookName, &a.Author, &a.Translator, &a.Publisher, &a.PublishTime, &a.BookStock, &a.Price, &a.TypeId, &a.Context, &a.Photo, &a.PageNum, &a.TypeName)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, err.Error())
 		}
 		res = append(res, a)
 	}
-	queryCount := "select COUNT(1) from bookInfo"
+	queryCount := "select COUNT(1) from g_book_info"
 	var a int
 	db.QueryRow(queryCount).Scan(&a)
 	if err != nil {
@@ -83,7 +82,7 @@ func QueryBookList(c echo.Context) error {
 }
 
 func UpdateBookInfo(c echo.Context) error {
-	var u = new(modal.BookInfo)
+	var u = new(modal.BookInfoReturn)
 	if err := c.Bind(u); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
@@ -91,7 +90,7 @@ func UpdateBookInfo(c echo.Context) error {
 	if err != nil || !ok {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	updateUserSQL := "update bookInfo set isbn = ?,bookName = ? ,author = ? ,translator = ?,publisher=?,publishTime = ?,bookStock=?,price=?,typeId=?,context=?,pageNum=?,photo=? where isbn = ?"
+	updateUserSQL := "update g_book_info set isbn = ?,bookName = ? ,author = ? ,translator = ?,publisher=?,publishTime = ?,bookStock=?,price=?,typeId=?,context=?,pageNum=?,photo=? where isbn = ?"
 	stmt, err := db.Prepare(updateUserSQL)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -104,7 +103,7 @@ func UpdateBookInfo(c echo.Context) error {
 }
 
 func DeleteBookInfo(c echo.Context) error {
-	deleteUserSql := "delete from bookInfo where isbn = ?"
+	deleteUserSql := "delete from g_book_info where isbn = ?"
 	stmt, err := db.Prepare(deleteUserSql)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -119,15 +118,13 @@ func DeleteBookInfo(c echo.Context) error {
 func GetTopBookList(c echo.Context) error {
 	zSliceCmd := rdb.ZRevRangeWithScores(ctx, modal.BOOK_BORROW_TOP_KEY_REDIS, 0, 4)
 	isbns := zSliceCmd.Val()
-	fmt.Println(isbns)
 	var members []string
 	for _, item := range isbns {
 		members = append(members, item.Member.(string))
 	}
 	sum := untils.Join(members, ",")
-	fmt.Println(sum)
 	var res []modal.BookBorrowTopRes
-	querySql := fmt.Sprintf("select isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum,(select typeName from book_type where id = bookInfo.typeId ) as typeName from bookInfo where bookInfo.isbn in ( %s )", sum)
+	querySql := fmt.Sprintf("select isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum,(select typeName from book_type where id = g_book_info.typeId ) as typeName from g_book_info where g_book_info.isbn in ( %s )", sum)
 	stmt, err := db.Prepare(querySql)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -148,4 +145,13 @@ func GetTopBookList(c echo.Context) error {
 		return res[i].Score > res[j].Score
 	})
 	return c.JSON(http.StatusOK, modal.Success(res))
+}
+
+func OneBookCollectCount(c echo.Context) error {
+	var bi = modal.BookInfo{
+		BookBaseInfo: modal.BookBaseInfo{Isbn: c.QueryParam("isbn")},
+	}
+	count := gdb.Model(&bi).Association("BookList").Count()
+	fmt.Println(count)
+	return c.JSON(http.StatusOK, modal.Success(count))
 }

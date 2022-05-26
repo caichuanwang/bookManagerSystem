@@ -17,7 +17,6 @@ import (
 func main() {
 	e := echo.New()
 	e.Static("/static", "static")
-	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Any("/*", echoSwagger.WrapHandler)
 	//自定义中间件
@@ -26,6 +25,9 @@ func main() {
 	//初始化连接数据库实例
 	go controller.DriverMySQL()
 	go controller.ConnectRedis()
+	go controller.ConnectMysqlWithGorm()
+	go controller.InitEMailPool()
+	go controller.TimerSendEmail()
 	r := e.Group("/v1")
 	r.Use(middleware.JWTWithConfig(middleware.JWTConfig{SigningMethod: "HS512", SigningKey: []byte("secret")}))
 	routers.InitRouter(r)
