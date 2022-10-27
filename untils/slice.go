@@ -2,12 +2,9 @@ package untils
 
 import "github.com/samber/lo"
 
-func Push(slice []interface{}, ele interface{}) []interface{} {
+func Push[T any](slice []T, ele T) []T {
 	if slice == nil {
 		panic("slice is nil")
-	}
-	if ele == nil {
-		panic("element is nil")
 	}
 	return append(slice, ele)
 }
@@ -17,7 +14,7 @@ func Join(slice []string, ele string) string {
 		if i == 0 {
 			return agg + item
 		} else {
-			return agg + "," + item
+			return agg + ele + item
 		}
 	}, "")
 

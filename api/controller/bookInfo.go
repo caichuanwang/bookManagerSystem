@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bookManagerSystem/log"
 	"bookManagerSystem/modal"
 	"bookManagerSystem/untils"
 	"bookManagerSystem/untils/sqlUntils"
@@ -10,10 +11,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/lo"
-	"sort"
-	//lop "github.com/samber/lo/parallel"
 	"net/http"
 	"path"
+	"sort"
 )
 
 func CreateBook(c echo.Context) error {
@@ -30,7 +30,11 @@ func CreateBook(c echo.Context) error {
 		var imgStr = b.Photo[0]["thumbUrl"].(string)
 		var uuidStr = uuid.New().String()
 		imgPath = untils.ReadCon("book", "imgPath") + "/" + uuidStr + path.Ext(b.Photo[0]["name"].(string))
-		_ = untils.Base642Img(imgStr[22:], untils.ReadCon("book", "imgPath"), uuidStr+path.Ext(b.Photo[0]["name"].(string)))
+		err := untils.Base642Img(imgStr[22:], untils.ReadCon("book", "imgPath"), uuidStr+path.Ext(b.Photo[0]["name"].(string)))
+		if err != nil {
+			log.Std.Infof("base642Img error: %s", err.Error())
+			return err
+		}
 	}
 	createSql := "insert into g_book_info(isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum)values(?,?,?,?,?,?,?,?,?,?,?,?)"
 	stmt, err := db.Prepare(createSql)
@@ -49,12 +53,12 @@ func QueryBookList(c echo.Context) error {
 	if err := c.Bind(u); err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	var paramMap = make(map[string]any)
+	var paramMap = make(map[string]string)
 	paramMap["bookName"] = u.BookName
 	whereCon := sqlUntils.CreateWhereSql(paramMap)
 	orderBySql := sqlUntils.CreateOrderSql(u.Order_by, u.Order_type)
 	LimitSql := sqlUntils.CreateLimitSql(u.Current, u.PageSize)
-	queryStr := fmt.Sprintf("select isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum,(select typeName from book_type where id = g_book_info.typeId ) as typeName from g_book_info %s %s %s ", whereCon, orderBySql, LimitSql)
+	queryStr := fmt.Sprintf("select isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum,(select typeName from book_type where id = g_book_info.typeId ) as typeName  from g_book_info %s %s %s ", whereCon, orderBySql, LimitSql)
 	stmt, err := db.Prepare(queryStr)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -151,7 +155,11 @@ func OneBookCollectCount(c echo.Context) error {
 	var bi = modal.BookInfo{
 		BookBaseInfo: modal.BookBaseInfo{Isbn: c.QueryParam("isbn")},
 	}
-	count := gdb.Model(&bi).Association("BookList").Count()
-	fmt.Println(count)
-	return c.JSON(http.StatusOK, modal.Success(count))
+	var collect []modal.BookList
+	gdb.Model(&bi).Association("BookList").Find(&collect)
+	var collectId []uint
+	for _, list := range collect {
+		collectId = append(collectId, list.ID)
+	}
+	return c.JSON(http.StatusOK, modal.Success(collectId))
 }

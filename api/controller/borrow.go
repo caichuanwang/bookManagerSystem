@@ -34,7 +34,7 @@ func CreateBorrow(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	var bookStock uint
-	queryBookStockSql := "select bookStock ,bookName from bookInfo where isbn = ?"
+	queryBookStockSql := "select bookStock ,bookName from g_book_info where isbn = ?"
 	stmt, err := db.Prepare(queryBookStockSql)
 	if err != nil {
 		_ = tx.Rollback()
@@ -67,7 +67,7 @@ func CreateBorrow(c echo.Context) error {
 		_ = tx.Rollback()
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	updateBookStock := "update bookInfo set bookStock = ? where isbn = ?"
+	updateBookStock := "update g_book_info set bookStock = ? where isbn = ?"
 	stmt, err = db.Prepare(updateBookStock)
 	if err != nil {
 		_ = tx.Rollback()
@@ -105,7 +105,7 @@ func CreateBorrow(c echo.Context) error {
 		rdb.ZIncrBy(ctx, modal.BOOK_BORROW_TOP_KEY_REDIS, 1, u.Borrow_book_isbn)
 	}
 	var e string
-	emailSql := "select email from user where id = ?"
+	emailSql := "select email from g_user where id = ?"
 	stmt, err = db.Prepare(emailSql)
 	if err != nil {
 		log.Fatal("get Email failed :" + err.Error())
@@ -130,7 +130,7 @@ func QueryBorrowList(c echo.Context) error {
 	if ok, err := govalidator.ValidateStruct(u); !ok || err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	var paramsMap = make(map[string]any)
+	var paramsMap = make(map[string]string)
 	paramsMap["borrow_reader_name"] = u.Borrow_reader_name
 	paramsMap["borrow_book_name"] = u.Borrow_book_name
 	whereSql := sqlUntils.CreateWhereSql(paramsMap)

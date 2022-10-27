@@ -3,6 +3,7 @@ package main
 import (
 	"bookManagerSystem/api/controller"
 	_ "bookManagerSystem/docs"
+	"bookManagerSystem/log"
 	"bookManagerSystem/routers"
 	"bookManagerSystem/untils"
 	"fmt"
@@ -28,6 +29,7 @@ func main() {
 	go controller.ConnectMysqlWithGorm()
 	go controller.InitEMailPool()
 	go controller.TimerSendEmail()
+	go log.Init()
 	r := e.Group("/v1")
 	r.Use(middleware.JWTWithConfig(middleware.JWTConfig{SigningMethod: "HS512", SigningKey: []byte("secret")}))
 	routers.InitRouter(r)

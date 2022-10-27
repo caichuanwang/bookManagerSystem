@@ -51,7 +51,7 @@ func QueryUser(c echo.Context) error {
 	if err := c.Bind(u); err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	var paramMap = make(map[string]interface{})
+	var paramMap = make(map[string]string)
 	paramMap["user_name"] = u.User_name
 	paramMap["role"] = u.Role
 	paramMap["borrow_book_count"] = u.Borrow_book_count

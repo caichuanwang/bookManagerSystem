@@ -1,12 +1,14 @@
 package controller
 
 import (
+	"bookManagerSystem/log"
 	"bookManagerSystem/modal"
 	"bookManagerSystem/untils"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
+	"github.com/samber/lo"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func CreateBookList(c echo.Context) error {
@@ -14,7 +16,6 @@ func CreateBookList(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-
 	var u modal.BookList
 	var user modal.User
 	gdb.Where("id = ?", claims.Id).First(&user)
@@ -25,6 +26,7 @@ func CreateBookList(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
+	log.Std.WithField("UserName", claims.Name).Info("创建书单" + u.Name + "成功")
 	return c.JSON(http.StatusOK, modal.Success("ok"))
 }
 
@@ -33,6 +35,7 @@ func QueryBookListOptions(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
+	log.Std.WithField("UserName", claims.Name).Info("查询书单一次")
 	var a []modal.BookList
 	gdb.Select("id", "name", "user_id").Where("user_id = ?", claims.Id).Find(&a)
 	var options []modal.SelectOption
@@ -46,6 +49,10 @@ func QueryBookListOptions(c echo.Context) error {
 }
 
 func SetBook2BookList(c echo.Context) error {
+	claims, err := untils.EncodingUser(c)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
 	var u modal.SetBook2BookListParams
 	if err := c.Bind(&u); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -54,12 +61,17 @@ func SetBook2BookList(c echo.Context) error {
 	gdb.Where("isbn = ?", u.Isbn).First(&a)
 	var b []modal.BookList
 	gdb.Where("id IN ? ", u.BookLists).Find(&b)
-	err := gdb.Model(&a).Association("BookList").Replace(&b)
+	err = gdb.Model(&a).Association("BookList").Replace(&b)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	var d []modal.BookList
 	gdb.Model(&a).Preload("BookInfo", "isbn = ?", a.Isbn).Association("BookList").Find(&d)
+	allBookListName := lo.Reduce[modal.BookList, string](b, func(names string, item modal.BookList, _ int) string {
+		return names + item.Name + ","
+	}, "")
+	log.Std.WithField("UserName", claims.Name).Info("添加书籍" + a.BookName + "到书单" + strings.TrimRight(allBookListName, ",") + "成功")
+
 	return c.JSON(http.StatusOK, modal.Success("ok"))
 }
 
@@ -93,6 +105,10 @@ func IsCollect(c echo.Context) error {
 }
 
 func QueryBookListList(c echo.Context) error {
+	claims, err := untils.EncodingUser(c)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
 	var p modal.QueryBookListParams
 	if err := c.Bind(&p); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -101,15 +117,21 @@ func QueryBookListList(c echo.Context) error {
 	gdb.Model(&bookLists).Where("name LIKE ?", "%"+p.Name+"%").Preload("BookInfo").Limit(p.PageSize).Offset((p.Current - 1) * p.PageSize).Find(&bookLists)
 	var t int64
 	gdb.Model(&bookLists).Count(&t)
+	log.Std.WithField("UserName", claims.Name).Info("查询书单一次")
 	return c.JSON(http.StatusOK, modal.TableSucc(bookLists, int(t)))
 }
 
 func DeleteBookListList(c echo.Context) error {
+	claims, err := untils.EncodingUser(c)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
 	id, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	var bl = modal.BookList{ID: uint(id)}
+	var bl = modal.BookList{}
+	gdb.Where("id = ?", id).First(&bl)
 	gdb.Delete(&bl)
 	err = gdb.Model(&bl).Association("BookInfo").Clear()
 	if err != nil {
@@ -119,6 +141,6 @@ func DeleteBookListList(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	log.Fatal()
+	log.Std.WithField("userName", claims.Name).Info("删除书单" + bl.Name)
 	return c.JSON(http.StatusOK, modal.Success("ok"))
 }

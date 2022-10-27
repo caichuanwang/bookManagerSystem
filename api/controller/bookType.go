@@ -48,7 +48,7 @@ func GetBookTypeList(c echo.Context) error {
 	if err := c.Bind(&u); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	var paramMap = make(map[string]any)
+	var paramMap = make(map[string]string)
 	paramMap["typeName"] = u.TypeName
 	paramMap["level"] = u.Level
 	paramMap["pName"] = u.PName
