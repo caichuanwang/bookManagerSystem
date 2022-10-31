@@ -7,6 +7,60 @@ definitions:
       user_password:
         type: string
     type: object
+  modal.BookInfo:
+    properties:
+      author:
+        type: string
+      bookList:
+        items:
+          $ref: '#/definitions/modal.BookList'
+        type: array
+      bookName:
+        type: string
+      bookStock:
+        type: integer
+      context:
+        type: string
+      isbn:
+        type: string
+      pageNum:
+        type: string
+      photo:
+        type: string
+      price:
+        type: number
+      publishTime:
+        type: string
+      publisher:
+        type: string
+      translator:
+        type: string
+      typeId:
+        type: integer
+    type: object
+  modal.BookList:
+    properties:
+      bookInfo:
+        items:
+          $ref: '#/definitions/modal.BookInfo'
+        type: array
+      id:
+        type: integer
+      name:
+        type: string
+      photo:
+        type: string
+      remake:
+        type: string
+      time:
+        type: string
+      user:
+        items:
+          $ref: '#/definitions/modal.User'
+        type: array
+      userId:
+        type: integer
+    type: object
   modal.BookType:
     properties:
       id:
@@ -92,7 +146,7 @@ definitions:
       label:
         type: string
       value:
-        type: string
+        type: any
     type: object
   modal.TableResult:
     properties:
@@ -121,6 +175,10 @@ definitions:
     properties:
       birthday:
         type: string
+      bookList:
+        items:
+          $ref: '#/definitions/modal.BookList'
+        type: array
       borrow_book_count:
         type: integer
       email:
@@ -132,8 +190,6 @@ definitions:
       remake:
         type: string
       role:
-        type: string
-      roleName:
         type: string
       sex:
         type: integer

@@ -40,8 +40,8 @@ func DriverMySQL() {
 }
 func ConnectRedis() {
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "127.0.0.1:6380",
-		Password: "123456",
+		Addr:     untils.ReadCon("redis", "addr"),
+		Password: untils.ReadCon("redis", "password"),
 		DB:       0, // use default DB
 		PoolSize: 20,
 	})
@@ -53,7 +53,7 @@ func ConnectRedis() {
 }
 
 func InitEMailPool() {
-	pool, err := email.NewPool("smtp.qq.com:25", 10, smtp.PlainAuth("", "1481410897@qq.com", "qewocvplfshoiheh", "smtp.qq.com"))
+	pool, err := email.NewPool("smtp.qq.com:25", 10, smtp.PlainAuth("", untils.ReadCon("qqEmail", "username"), untils.ReadCon("qqEmail", "password"), "smtp.qq.com"))
 	if err != nil {
 		panic(err.Error())
 	}

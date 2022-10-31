@@ -414,6 +414,88 @@ const docTemplate = `{
                 }
             }
         },
+        "modal.BookInfo": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "bookList": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/modal.BookList"
+                    }
+                },
+                "bookName": {
+                    "type": "string"
+                },
+                "bookStock": {
+                    "type": "integer"
+                },
+                "context": {
+                    "type": "string"
+                },
+                "isbn": {
+                    "type": "string"
+                },
+                "pageNum": {
+                    "type": "string"
+                },
+                "photo": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "publishTime": {
+                    "type": "string"
+                },
+                "publisher": {
+                    "type": "string"
+                },
+                "translator": {
+                    "type": "string"
+                },
+                "typeId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "modal.BookList": {
+            "type": "object",
+            "properties": {
+                "bookInfo": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/modal.BookInfo"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "photo": {
+                    "type": "string"
+                },
+                "remake": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/modal.User"
+                    }
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
         "modal.BookType": {
             "type": "object",
             "properties": {
@@ -544,7 +626,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "value": {
-                    "type": "string"
+                    "type": "any"
                 }
             }
         },
@@ -589,6 +671,12 @@ const docTemplate = `{
                 "birthday": {
                     "type": "string"
                 },
+                "bookList": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/modal.BookList"
+                    }
+                },
                 "borrow_book_count": {
                     "type": "integer"
                 },
@@ -605,9 +693,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
-                    "type": "string"
-                },
-                "roleName": {
                     "type": "string"
                 },
                 "sex": {
