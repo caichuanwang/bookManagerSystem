@@ -127,6 +127,7 @@ func GetTopBookList(c echo.Context) error {
 		members = append(members, item.Member.(string))
 	}
 	sum := untils.Join(members, ",")
+	sum = fmt.Sprintf("'%s'", sum)
 	var res []modal.BookBorrowTopRes
 	querySql := fmt.Sprintf("select isbn,bookName,author,translator,publisher,publishTime,bookStock,price,typeId,context,photo,pageNum,(select typeName from book_type where id = g_book_info.typeId ) as typeName from g_book_info where g_book_info.isbn in ( %s )", sum)
 	stmt, err := db.Prepare(querySql)

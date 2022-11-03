@@ -55,7 +55,7 @@ func GetBookTypeList(c echo.Context) error {
 	whereCon := sqlUntils.CreateWhereSql(paramMap)
 	orderBySql := sqlUntils.CreateOrderSql(u.Order_by, u.Order_type)
 	limitSql := sqlUntils.CreateLimitSql(u.Current, u.PageSize)
-	querySql := fmt.Sprintf("select id,typeName,level ,remake , pName, pId  from book_type_with_pName %s %s %s", whereCon, orderBySql, limitSql)
+	querySql := fmt.Sprintf("select id,typeName,level ,remake , pName, pId  from book_type_with_pname %s %s %s", whereCon, orderBySql, limitSql)
 	stmt, err := db.Prepare(querySql)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -74,7 +74,7 @@ func GetBookTypeList(c echo.Context) error {
 		}
 		res = append(res, tempBook)
 	}
-	queryCount := fmt.Sprintf("select count(id) from book_type_with_pName %s", whereCon)
+	queryCount := fmt.Sprintf("select count(id) from book_type_with_pname %s", whereCon)
 	var a int
 	err = db.QueryRow(queryCount).Scan(&a)
 	if err != nil {

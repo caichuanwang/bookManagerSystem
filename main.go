@@ -18,11 +18,12 @@ import (
 func main() {
 	e := echo.New()
 	e.Static("/static", "static")
+
 	e.Use(middleware.Recover())
 	e.Any("/*", echoSwagger.WrapHandler)
 	//自定义中间件
 	//e.Use(filter.CustomFilter)
-	e.POST("/login", controller.HandleLoginController)
+	e.POST("/v1/login", controller.HandleLoginController)
 	//初始化连接数据库实例
 	go controller.DriverMySQL()
 	go controller.ConnectRedis()

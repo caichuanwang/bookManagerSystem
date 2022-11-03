@@ -33,7 +33,7 @@ func DriverMySQL() {
 	//defer sqlSession.Close()
 	err = sqlSession.Ping()
 	if err != nil {
-		panic("connection database fail!")
+		panic(fmt.Sprintf("connection database fail!:%s", err.Error()))
 	}
 	db = sqlSession
 
@@ -55,7 +55,7 @@ func ConnectRedis() {
 func InitEMailPool() {
 	pool, err := email.NewPool("smtp.qq.com:25", 10, smtp.PlainAuth("", untils.ReadCon("qqEmail", "username"), untils.ReadCon("qqEmail", "password"), "smtp.qq.com"))
 	if err != nil {
-		panic(err.Error())
+		panic("init email error :" + err.Error())
 	}
 	emailPool = pool
 }
