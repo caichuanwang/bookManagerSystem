@@ -1,0 +1,52 @@
+version: "3"
+services:
+  nginx: #服务名称
+    image: nginx:latest
+    container_name: bms-fe
+    ports:
+      - 2222:80
+    volumes:
+      - ./nginx/html:/usr/share/nginx/html  #将宿主机的html映射到容器的 /usr/share/nginx/html目录中
+      - ./nginx/bms.conf:/etc/nginx/conf.d/bms.conf #这里也是同样的道理，将配置文件映射过去
+    privileged: true #解决nginx的文件调用权限问题
+mysql:
+  image: mysql:8.0.28
+  restart: always
+  container_name: bms-mysql
+  environment:
+    - "MYSQL_ROOT_PASSWORD=Wang112224"
+    - "MYSQL_DATABASE=book_management_system"
+    - "TZ=Asia/Shanghai"
+  ports:
+    - 3306:3306
+  volumes:
+    - $PWD/data:/var/lib/mysql
+    - ./init/:/docker-entrypoint-initdb.d/
+backend:
+  image: caichuanwang/bms:v1.5
+  container_name: bms-go
+  restart: always
+  depends_on:
+    - mysql
+    - redis
+  links:
+    - mysql
+    - redis
+  ports:
+    - 8888:8888
+  volumes:
+    - ./app.conf:/usr/local/bms/app.conf
+redis:
+  image: redis:6.0.6
+   restart: "no"
+   container_name: bms-redis
+   ports:
+     - 6379:6379
+  volumes:
+    - ./redis.conf:/etc/redis/redis.conf
+    - ./redis-data:/data
+  environment:
+     - TZ=Asia/Shanghai # 时区设置
+  command: redis-server /etc/redis/redis.conf
+  privileged: true
+
