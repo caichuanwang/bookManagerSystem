@@ -4,7 +4,7 @@ type User struct {
 	Id                int64      `json:"id" form:"id"  gorm:"primary_key;autoIncrement"`
 	User_name         string     `json:"user_name" form:"user_name" valid:"type(string),required"`
 	User_password     string     `json:"user_password" form:"user_password" valid:"type(string),required"`
-	Sex               int8       `json:"sex,omitempty" form:"sex" valid:"type(int)"`
+	Sex               int8       `json:"sex,omitempty" form:"sex"`
 	Birthday          string     `json:"birthday" form:"birthday"`
 	Borrow_book_count int        `json:"borrow_book_count,omitempty" form:"borrow_book_count" valid:"type(int),range(0|5)" gorm:"type:integer" `
 	Phone             string     `json:"phone,omitempty" form:"phone"`
